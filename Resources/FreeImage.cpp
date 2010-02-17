@@ -13,6 +13,8 @@
 #include <Resources/File.h>
 #include <Utils/Convert.h>
 
+#include <cstring> // includes memcpy
+
 //@todo make a FreeImage.h in a Meta folder
 #include <FreeImage.h>
 
@@ -82,7 +84,7 @@ void FreeImage::Load() {
     unsigned int lineWidth = GetWidth() * numberOfCharsPerColor;
     unsigned long size = lineWidth * GetHeight();
     data = new unsigned char[size];
-    memcpy(data, pixels, size);
+    std::memcpy(data, pixels, size);
 	FreeImage_Unload(imagen);
     
     //flip vertecally
@@ -116,7 +118,7 @@ void FreeImage::ReverseVertecally() {
 
     for (unsigned int i=0, j=size-lineWidth; i < size;
 	 i+=lineWidth, j-=lineWidth) {
-	memcpy(&tempArr[j], &data[i], lineWidth);
+        std::memcpy(&tempArr[j], &data[i], lineWidth);
     }
     delete[] data;
     data = tempArr;
