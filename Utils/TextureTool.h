@@ -1,7 +1,7 @@
 #ifndef _TEXTURE_TOOL_
 #define _TEXTURE_TOOL_
 
-#include <Resources/ITextureResource.h>
+#include <Resources/Texture2D.h>
 #include <string>
 
 using namespace OpenEngine::Resources;
@@ -10,7 +10,7 @@ using namespace OpenEngine::Resources;
 
 class TextureTool {
  public:
-    static void DumpTexture(ITextureResourcePtr tex, std::string filename) {
+    static void DumpTexture(ITexture2DPtr tex, std::string filename) {
         FreeImage_Initialise();
         //cout << "FreeImage vesrion: " << FreeImage_GetVersion() << endl;
         //cout << FreeImage_GetCopyrightMessage() << endl << endl;
@@ -18,7 +18,10 @@ class TextureTool {
         const unsigned int width = tex->GetWidth();
         const unsigned int height = tex->GetHeight();
         const unsigned int channels = tex->GetChannels(); 
-        unsigned char* data = tex->GetData();
+
+        if(tex->GetType() != Types::UBYTE)
+           throw Exception("not a byte texture");
+        unsigned char* data = (unsigned char*)tex->GetVoidDataPtr();
 
         //for (unsigned int i = 0; i<height*width; i++)
         //  data[i] = 255;

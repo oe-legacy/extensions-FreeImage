@@ -47,12 +47,12 @@ ITextureResourcePtr FreeImagePlugin::CreateResource(string file) {
 }
 
 FreeImage::FreeImage(string filename)
-    : ITextureResource(), loaded(false), filename(filename) {
+    : loaded(false), filename(filename) {
 }
 
 FreeImage::~FreeImage() {
     if (loaded) {
-        delete[] data;
+        delete[] ((unsigned char*)data);
         loaded = false;
     }
 }
@@ -111,6 +111,7 @@ void FreeImage::Load() {
 void FreeImage::Unload() {
 }
 
+    /*
 void FreeImage::ReverseVertecally() {
     unsigned int lineWidth = GetWidth() * channels;
     unsigned long size = lineWidth * GetHeight();
@@ -123,7 +124,6 @@ void FreeImage::ReverseVertecally() {
     delete[] data;
     data = tempArr;
 }
-    /*
 int FreeImage::GetID() {
     return id;
 }

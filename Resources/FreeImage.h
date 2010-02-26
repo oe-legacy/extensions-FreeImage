@@ -10,7 +10,7 @@
 #ifndef _FREE_IMAGE_H_
 #define _FREE_IMAGE_H_
 
-#include <Resources/ITextureResource.h>
+#include <Resources/Texture2D.h>
 #include <Resources/IResourcePlugin.h>
 #include <string>
 #include <iostream>
@@ -32,7 +32,7 @@ using namespace std;
  *
  * @class FreeImage FreeImage.h Resources/FreeImage.h
  */
-class FreeImage : public ITextureResource {
+class FreeImage : public Texture2D<unsigned char> {
 private:
     bool loaded;
     //int id;                     //!< material identifier
@@ -57,7 +57,7 @@ public:
         ar & filename;
     }
 
- FreeImage() : ITextureResource(), loaded(false) {
+ FreeImage() : loaded(false) {
     };
 
     static bool freeImageLoaded;
@@ -79,8 +79,8 @@ public:
     unsigned int GetDepth();
     unsigned char* GetData();
     ColorFormat GetColorFormat();
-    */
     virtual void ReverseVertecally();
+    */
 };
 
 /**
