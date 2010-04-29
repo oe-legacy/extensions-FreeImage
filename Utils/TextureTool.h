@@ -13,35 +13,41 @@ class TextureTool {
  public:
     static void DumpTexture(FloatTexture2DPtr tex, std::string filename) {
         FreeImage_Initialise();
-        //cout << "FreeImage vesrion: " << FreeImage_GetVersion() << endl;
-        //cout << FreeImage_GetCopyrightMessage() << endl << endl;
 
         const unsigned int width = tex->GetWidth();
         const unsigned int height = tex->GetHeight();
-        float* data = tex->GetData();
+        const unsigned int bpp = 8*sizeof(FIRGBAF); 
 
-        //const unsigned int channels = tex->GetChannels(); 
-        //logger.info << width << "x" << height << ":" << channels << logger.end;
-
-        // since we are outputting thre 8 bit RGB values
-        const unsigned int bpp = 1*sizeof(float)*8; 
-        //logger.info << "bpp: " << bpp << logger.end;
-        FIBITMAP* bitmap = FreeImage_AllocateT(FIT_FLOAT, width, height, bpp);
+        FIBITMAP* bitmap = FreeImage_AllocateT(FIT_RGBAF, width, height, bpp);
         if (!bitmap)
             throw Exception("Error: allocation failed");
 
-        // Draws a gradient from blue to green:
-        int bytespp = FreeImage_GetLine(bitmap) / FreeImage_GetWidth(bitmap);        
-        for(unsigned int y = 0; y < FreeImage_GetHeight(bitmap); y++) { 
-            BYTE* bits = (BYTE*)FreeImage_GetScanLine(bitmap, y);
-            for(unsigned int x = 0; x < FreeImage_GetWidth(bitmap); x++) {
-                bits[FI_RGBA_RED] = 255;
-                bits[FI_RGBA_GREEN] = 255;
-                bits[FI_RGBA_BLUE] = 255;
-                bits[FI_RGBA_ALPHA] = data[x+y*width];
-                bits += bytespp;
+        float* data = tex->GetData();
+        for (unsigned int y = 0; y < height; y++) { 
+            float* bits = reinterpret_cast<float*>
+                (FreeImage_GetScanLine(bitmap,y));
+            for (unsigned int x = 0; x < width; x++) {
+                float scale = 1.0f;
+
+                bits[x*4+0] = 1.0 * scale;//data[x+y*width] * scale;
+                bits[x*4+1] = 1.0 * scale;//data[x+y*width] * scale;
+                bits[x*4+2] = 1.0 * scale;//0.0;//data[x+y*width] * scale;
+                bits[x*4+3] = data[x+y*width] * scale;
+
+                /*
+                bits[x*4+0] = data[x+y*width] *scale;
+                bits[x*4+1] = data[x+y*width] *scale;
+                bits[x*4+2] = data[x+y*width] *scale;
+                bits[x*4+3] = scale;//data[x+y*width] *scale;
+                */
+
+                //bits[FI_RGBA_RED] = 1.0;
+                //bits[FI_RGBA_GREEN] = 1.0;
+                //bits[FI_RGBA_BLUE] = 100000.0;
+                //bits[FI_RGBA_ALPHA] = data[x+y*width];
             }
         }
+
         if ( !FreeImage_Save(FIF_EXR, bitmap, filename.c_str(), EXR_FLOAT) )
           throw Exception("Failed to save image: " + filename);
         FreeImage_Unload(bitmap);
@@ -69,26 +75,28 @@ class TextureTool {
         FIBITMAP* bitmap = NULL;
 
         // since we are outputting thre 8 bit RGB values
-        const unsigned int bpp = 32; 
+        const unsigned int bpp = 8*4;
         bitmap = FreeImage_Allocate(width, height, bpp);
         if (!bitmap)
             throw Exception("Error: allocation failed");
         //bitmap = FreeImage_ConvertTo32Bits(bitmap);
 
         // Calculate the number of bytes per pixel (3 for 24-bit or 4 for 32-bit) 
+
         int bytespp = FreeImage_GetLine(bitmap) / FreeImage_GetWidth(bitmap);        
         for(unsigned int y = 0; y < FreeImage_GetHeight(bitmap); y++) { 
             BYTE* bits = (BYTE*)FreeImage_GetScanLine(bitmap, y);
             for(unsigned int x = 0; x < FreeImage_GetWidth(bitmap); x++) {
-                bits[FI_RGBA_RED] = numeric_limits<float>::max();
-                bits[FI_RGBA_GREEN] = numeric_limits<float>::max();
-                bits[FI_RGBA_BLUE] = numeric_limits<float>::max();
+                bits[FI_RGBA_RED] = 255;
+                bits[FI_RGBA_GREEN] = 255;
+                bits[FI_RGBA_BLUE] = 255;
                 bits[FI_RGBA_ALPHA] = data[x+y*width];
-
+                
                 // jump to next pixel
                 bits += bytespp;
             }
         }
+
         /*
         // Draws a gradient from blue to green:
         RGBQUAD color;
