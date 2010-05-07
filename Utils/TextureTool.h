@@ -9,6 +9,16 @@ using namespace OpenEngine::Resources;
 #include <FreeImage.h>
 #include <limits>
 
+// on linux the following constants are not defined in FreeImage.h for
+// some reason. Got these values from:
+// http://freeimage.sourceforge.net/fip/FreeImage_8h-source.html
+#ifndef PNG_Z_BEST_SPEED
+#define PNG_Z_BEST_SPEED 0x0001  // save using ZLib level 1 compression flag (default value is 6)
+#endif
+#ifndef PNG_Z_BEST_COMPRESSION
+#define PNG_Z_BEST_COMPRESSION 0x0009  // save using ZLib level 9 compression flag (default value is 6)
+#endif
+
 class TextureTool {
  private:
 static vector<FloatTexture2DPtr> ToLayers(FloatTexture3DPtr tex) {
