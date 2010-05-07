@@ -10,41 +10,62 @@ using namespace OpenEngine::Resources;
 #include <limits>
 
 class TextureTool {
+ private:
+static vector<FloatTexture2DPtr> ToLayers(FloatTexture3DPtr tex) {
+    const unsigned int w = tex->GetWidth();
+    const unsigned int h = tex->GetHeight();
+    const unsigned int d = tex->GetDepth();
+    const unsigned int c = tex->GetChannels();
+    const float* din = tex->GetData();
+
+    vector<FloatTexture2DPtr> list;
+    for (unsigned int z=0; z<d; z++) {
+        FloatTexture2DPtr output(new FloatTexture2D(w,h,c));
+        float* dout = output->GetData();
+        for (unsigned int y=0; y<h; y++) {
+            for (unsigned int x=0; x<w; x++) {
+                for (unsigned int ch=0; ch<c; ch++) {
+                    dout[(x+y*w)*c+ch] = din[(x+y*w+z*w*h)*c+ch]; 
+                }
+            }
+        }
+        list.push_back(output);
+    }
+    return list;
+}
+
  public:
     static void DumpTexture(FloatTexture2DPtr tex, std::string filename) {
         FreeImage_Initialise();
 
-        const unsigned int width = tex->GetWidth();
-        const unsigned int height = tex->GetHeight();
-        const unsigned int bpp = 8*sizeof(FIRGBAF); 
-
-        FIBITMAP* bitmap = FreeImage_AllocateT(FIT_RGBAF, width, height, bpp);
+        const unsigned int w = tex->GetWidth();
+        const unsigned int h = tex->GetHeight();
+        const unsigned int c = tex->GetChannels(); 
+        const unsigned int cs = tex->GetChannelSize(); 
+        const unsigned int bpp = 8*cs*c; 
+        /*
+        logger.info << "saving: " << w << "x" << h << ":" << c 
+                    << "-" << bpp << logger.end;
+        */
+        FIBITMAP* bitmap = FreeImage_AllocateT(FIT_RGBAF, w, h, bpp);
         if (!bitmap)
             throw Exception("Error: allocation failed");
 
         float* data = tex->GetData();
-        for (unsigned int y = 0; y < height; y++) { 
+        for (unsigned int y = 0; y < h; y++) { 
             float* bits = reinterpret_cast<float*>
                 (FreeImage_GetScanLine(bitmap,y));
-            for (unsigned int x = 0; x < width; x++) {
-                float scale = 1.0f;
-
-                bits[x*4+0] = 1.0 * scale;//data[x+y*width] * scale;
-                bits[x*4+1] = 1.0 * scale;//data[x+y*width] * scale;
-                bits[x*4+2] = 1.0 * scale;//0.0;//data[x+y*width] * scale;
-                bits[x*4+3] = data[x+y*width] * scale;
-
+            for (unsigned int x = 0; x < w; x++) {
                 /*
-                bits[x*4+0] = data[x+y*width] *scale;
-                bits[x*4+1] = data[x+y*width] *scale;
-                bits[x*4+2] = data[x+y*width] *scale;
-                bits[x*4+3] = scale;//data[x+y*width] *scale;
+                float scale = 1.0f;
+                bits[x*4+0] = 1.0 * scale;
+                bits[x*4+1] = 1.0 * scale;
+                bits[x*4+2] = 1.0 * scale;
+                bits[x*4+3] = data[x+y*width] * scale;
                 */
-
-                //bits[FI_RGBA_RED] = 1.0;
-                //bits[FI_RGBA_GREEN] = 1.0;
-                //bits[FI_RGBA_BLUE] = 100000.0;
-                //bits[FI_RGBA_ALPHA] = data[x+y*width];
+                for (unsigned int ch = 0; ch < c; ch++) {
+                    bits[x*c+ch] = data[(x+y*w)*c+ch];
+                }
             }
         }
 
@@ -54,43 +75,56 @@ class TextureTool {
         FreeImage_DeInitialise();
     }
 
+    static void DumpTexture(FloatTexture3DPtr input, std::string foldername) {
+        vector<FloatTexture2DPtr> texList = ToLayers(input);
+
+        int count = 1;
+        vector<FloatTexture2DPtr >::iterator itr = texList.begin();
+        while (itr != texList.end()) {
+            FloatTexture2DPtr tex = *itr;
+            std::string filename = foldername + "/";
+
+            // @todo: make this general
+            if (count<10) filename += "0";
+            if (count<100) filename += "0";
+
+            filename += Convert::ToString(count);
+            TextureTool::DumpTexture(tex, filename + ".exr");
+
+            count++;
+            ++itr;
+        }
+    }
+
     static void DumpTexture(UCharTexture2DPtr tex, std::string filename) {
         FreeImage_Initialise();
         //cout << "FreeImage vesrion: " << FreeImage_GetVersion() << endl;
         //cout << FreeImage_GetCopyrightMessage() << endl << endl;
 
-        const unsigned int width = tex->GetWidth();
-        const unsigned int height = tex->GetHeight();
-        //const unsigned int channels = tex->GetChannels(); 
+        const unsigned int w = tex->GetWidth();
+        const unsigned int h = tex->GetHeight();
+        const unsigned int c = tex->GetChannels(); 
+        const unsigned int cs = tex->GetChannelSize(); 
+        const unsigned int bpp = 8*cs*c; 
 
-        if(tex->GetType() != Types::UBYTE)
-           throw Exception("not a byte texture");
-        unsigned char* data = (unsigned char*)tex->GetVoidDataPtr();
+        unsigned char* data = tex->GetData();
 
-        //for (unsigned int i = 0; i<height*width; i++)
-        //  data[i] = 255;
-
-        //logger.info << width << "x" << height << ":" << channels << logger.end;
-
-        FIBITMAP* bitmap = NULL;
-
-        // since we are outputting thre 8 bit RGB values
-        const unsigned int bpp = 8*4;
-        bitmap = FreeImage_Allocate(width, height, bpp);
+        FIBITMAP* bitmap = FreeImage_Allocate(w, h, bpp);
         if (!bitmap)
             throw Exception("Error: allocation failed");
-        //bitmap = FreeImage_ConvertTo32Bits(bitmap);
 
-        // Calculate the number of bytes per pixel (3 for 24-bit or 4 for 32-bit) 
-
-        int bytespp = FreeImage_GetLine(bitmap) / FreeImage_GetWidth(bitmap);        
-        for(unsigned int y = 0; y < FreeImage_GetHeight(bitmap); y++) { 
+        unsigned int bytespp = FreeImage_GetLine(bitmap) / w;
+        for (unsigned int y = 0; y < h; y++) {
             BYTE* bits = (BYTE*)FreeImage_GetScanLine(bitmap, y);
-            for(unsigned int x = 0; x < FreeImage_GetWidth(bitmap); x++) {
-                bits[FI_RGBA_RED] = 255;
-                bits[FI_RGBA_GREEN] = 255;
-                bits[FI_RGBA_BLUE] = 255;
-                bits[FI_RGBA_ALPHA] = data[x+y*width];
+            for (unsigned int x = 0; x < w; x++) {
+
+                bits[FI_RGBA_RED]   = data[(x+y*w)*c + 0];
+                if (c >= 2)
+                bits[FI_RGBA_GREEN] = data[(x+y*w)*c + 1];
+                if (c >= 3)
+                bits[FI_RGBA_BLUE]  = data[(x+y*w)*c + 2];
+                if (c >= 4)
+                bits[FI_RGBA_ALPHA] = data[(x+y*w)*c + 3];
                 
                 // jump to next pixel
                 bits += bytespp;
