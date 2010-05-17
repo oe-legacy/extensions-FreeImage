@@ -2,17 +2,14 @@
 #define _TEXTURE_TOOL_
 
 #include <Resources/Texture2D.h>
+
+#include <Resources/Directory.h>
+
 #include <string>
+#include <limits>
+#include <Meta/FreeImage.h>
 
 using namespace OpenEngine::Resources;
-
-#include <FreeImage.h>
-#include <limits>
-
-
-#include <sys/stat.h>
-#include <sys/types.h>
-
 
 // on linux the following constants are not defined in FreeImage.h for
 // some reason. Got these values from:
@@ -91,18 +88,11 @@ static vector<FloatTexture2DPtr> ToLayers(FloatTexture3DPtr tex) {
     }
 
     static void DumpTexture(FloatTexture3DPtr input, std::string foldername) {
-        char buffer[255];
-        getcwd(buffer,255);
-        std::string back = buffer;
-        if (chdir(foldername.c_str()) != 0) {
+        if (!Directory::Exists(foldername)) {
             logger.info << "mkdir: " << foldername << logger.end;
-            if (mkdir(foldername.c_str(),0777) != 0) {
-                throw Core::Exception("could not create directory: " +
-                                      foldername);
-            }
+            Directory::Make(foldername);
         } else {
             logger.info << "dir allready exists: " << foldername << logger.end;
-            chdir(back.c_str());
         }
 
         vector<FloatTexture2DPtr> texList = ToLayers(input);
