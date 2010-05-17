@@ -1,6 +1,7 @@
 SET( EXTENSION_NAME "Extensions_FreeImage")
 
 ADD_LIBRARY( ${EXTENSION_NAME}
+  Meta/FreeImage.cpp
   Resources/FreeImage.cpp
 )
 
