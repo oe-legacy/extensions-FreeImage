@@ -41,7 +41,7 @@ public:
         list<std::string>::iterator itr = files.begin();
         for (; itr != files.end(); itr++) {
             std::string file = dir + "/" + *itr;
-            logger.info << "Loading file: " << file << logger.end;
+            //logger.info << "Loading file: " << file << logger.end;
             Texture2DPtr(T) tex = 
                 ResourceManager< Texture2D<T> >::Create(file);
             texs.push_back(tex);
