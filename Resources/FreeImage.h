@@ -138,10 +138,12 @@ public:
     else
         this->format = ITexture::ColorFormatFromChannelsBGR(this->channels);
 
+    /*
     logger.info << "loaded: " << filename 
                 << " (" << colorFomatToString(this->format) << "), "
                 << this->width << "x" << this->height << ":"
                 << (int)this->channels << logger.end;
+    */
     loaded = true;
 }
 
