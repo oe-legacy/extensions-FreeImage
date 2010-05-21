@@ -86,20 +86,21 @@ public:
     this->data = d;
 
     // @todo: do raw memcopy instead of for loops
-    /*
-	unsigned char* pixels = (unsigned char*)FreeImage_GetBits(imagen);
-    std::memcpy(data, pixels, size);
-    */
+	T* pixels = (T*)FreeImage_GetBits(imagen);
+    std::memcpy(d, pixels, size*sizeof(T));
 
-    unsigned int c = this->channels;
-    unsigned int w = this->width;
-    unsigned int h = this->height;
     /*
         logger.info << "FI_RGBA_RED: " << FI_RGBA_RED << logger.end; 
         logger.info << "FI_RGBA_GREEN: " << FI_RGBA_GREEN << logger.end; 
         logger.info << "FI_RGBA_BLUE: " << FI_RGBA_BLUE << logger.end; 
         logger.info << "FI_RGBA_ALPHA: " << FI_RGBA_ALPHA << logger.end; 
 */
+
+    /*
+    unsigned int c = this->channels;
+    unsigned int w = this->width;
+    unsigned int h = this->height;
+
     unsigned int bytespp = FreeImage_GetLine(imagen) / w;
     logger.info << "bytespp: " << bytespp << logger.end;
     for (unsigned int y = 0; y < h; y++) {
@@ -108,7 +109,7 @@ public:
         for (unsigned int x = 0; x < w; x++) {
 
             unsigned int id = (x+y*w)*c;
-#define USE_LOOP
+            //#define USE_LOOP
 #ifdef USE_LOOP
             for (unsigned int ch = 0; ch < c; ch++) {
                 d[id + ch] = bits[accountForEndian(ch)];
@@ -126,13 +127,14 @@ public:
             bits += bytespp;
         }
     }
+    */
 	FreeImage_Unload(imagen);
     
     //flip vertecally
     //ReverseVertecally();
 
     if (typeid(T) == typeid(float))
-        this->format = RGBA32F;
+        this->format = RGBA32F; //@todo: convert pixels from BGRA to RGBA
     else
         this->format = ITexture::ColorFormatFromChannelsBGR(this->channels);
 
