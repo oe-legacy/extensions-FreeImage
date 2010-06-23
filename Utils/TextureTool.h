@@ -85,36 +85,21 @@ class TextureTool {
         if (!bitmap)
             throw Exception("Error: allocation failed");
 
-        unsigned int bytespp = FreeImage_GetLine(bitmap) / w;
         T* data = tex->GetData();
         for (unsigned int y = 0; y < h; y++) { 
             T* bits = reinterpret_cast<T*>
                 (FreeImage_GetScanLine(bitmap,y));
             for (unsigned int x = 0; x < w; x++) {
-
-        if (typeid(T) ==typeid(float)) {
-                /*
-                float scale = 1.0f;
-                bits[x*4+0] = 1.0 * scale;
-                bits[x*4+1] = 1.0 * scale;
-                bits[x*4+2] = 1.0 * scale;
-                bits[x*4+3] = data[x+y*width] * scale;
-                */
-                for (unsigned int ch = 0; ch < c; ch++) {
-                    bits[x*c+ch] = data[(x+y*w)*c+ch];
-                }
-        } else if (typeid(T) ==typeid(unsigned char)) {
-                bits[FI_RGBA_BLUE]   = data[(x+y*w)*c + 0];
+                bits[FI_RGBA_BLUE]  = data[(x+y*w)*c + 0];
                 if (c >= 2)
                 bits[FI_RGBA_GREEN] = data[(x+y*w)*c + 1];
                 if (c >= 3)
-                bits[FI_RGBA_RED]  = data[(x+y*w)*c + 2];
+                bits[FI_RGBA_RED]   = data[(x+y*w)*c + 2];
                 if (c >= 4)
                 bits[FI_RGBA_ALPHA] = data[(x+y*w)*c + 3];                
 
                 // jump to next pixel
-                bits += bytespp;
-        }
+                bits += c;
             }
         }
 
