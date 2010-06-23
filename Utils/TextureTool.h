@@ -21,6 +21,19 @@ using namespace OpenEngine::Resources;
 #define PNG_Z_BEST_COMPRESSION 0x0009  // save using ZLib level 9 compression flag (default value is 6)
 #endif
 
+/** FreeImage error handler
+@param fif Format / Plugin responsible for the error
+@param message Error message
+*/
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+    printf("\n*** ");
+    if (fif != FIF_UNKNOWN) {
+        printf("%s Format\n", FreeImage_GetFormatFromFIF(fif));
+    }
+    printf("%s\n", message);
+    printf(" ***\n");
+}
+
 template <class T>
 class TextureTool {
  private:
@@ -50,6 +63,7 @@ class TextureTool {
  public:
  static void DumpTexture(Texture2DPtr(T) tex, std::string filename) {
         FreeImage_Initialise();
+        FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
         const unsigned int w = tex->GetWidth();
         const unsigned int h = tex->GetHeight();
