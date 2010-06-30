@@ -2,6 +2,7 @@
 #define _TEXTURE_TOOL_
 
 #include <Resources/Texture2D.h>
+#include <Resources/Texture3D.h>
 
 #include <Resources/Directory.h>
 
@@ -65,9 +66,14 @@ class TextureTool {
         FreeImage_Initialise();
         FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
+        const unsigned int c = tex->GetChannels(); 
+        if (c != 4) {
+            logger.warning 
+                << "dump not tested with other than four color channels"
+                << logger. end;
+        }
         const unsigned int w = tex->GetWidth();
         const unsigned int h = tex->GetHeight();
-        const unsigned int c = tex->GetChannels(); 
         const unsigned int cs = tex->GetChannelSize(); 
         const unsigned int bpp = 8*cs*c; 
         /*
