@@ -67,10 +67,18 @@ class TextureTool {
         FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
         const unsigned int c = tex->GetChannels(); 
-        if (c != 4) {
+        if (typeid(T) == typeid(float) && c != 4) {
             logger.warning 
-                << "dump not tested with other than four color channels"
-                << logger. end;
+                << "dump not tested with other than four color channel, "
+                << "for float images"
+                << logger.end;
+        }
+        if (typeid(T) == typeid(unsigned char) && c != 3 && c != 4) {
+            logger.warning 
+                << "dump not tested with other than "
+                << "three or four color channels, "
+                << "for unsigned char images"
+                << logger.end;
         }
         const unsigned int w = tex->GetWidth();
         const unsigned int h = tex->GetHeight();
@@ -81,9 +89,9 @@ class TextureTool {
                     << "-" << bpp << logger.end;
         */
         FIBITMAP* bitmap = NULL;
-        if (typeid(T) ==typeid(float)) {
+        if (typeid(T) == typeid(float)) {
             bitmap = FreeImage_AllocateT(FIT_RGBAF, w, h, bpp);
-        } else if (typeid(T) ==typeid(unsigned char)) {
+        } else if (typeid(T) == typeid(unsigned char)) {
             bitmap = FreeImage_Allocate(w, h, bpp);
         } else
             throw Exception("unsupported texture dump format on alloc.");
