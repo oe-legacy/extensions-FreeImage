@@ -15,50 +15,52 @@ FIND_PATH(FREEIMAGE_INCLUDE_DIR NAMES FreeImage.h
                                       $ENV{H3D_ROOT}/../External/include/FreeImage/Dist
                                       ../../External/include
                                       ../../External/include/FreeImage/Dist
-                                      ${module_file_path}/../../../External/include
+									  ${OE_LIB_DIR}/FreeImage/include
+									  ${module_file_path}/../../../External/include
                                       ${module_file_path}/../../../External/include/FreeImage/Dist)
 
 MARK_AS_ADVANCED(FREEIMAGE_INCLUDE_DIR)
 
 # Look for the library.
-FIND_LIBRARY(FREEIMAGE_LIBRARY NAMES freeimage
+FIND_LIBRARY(FREEIMAGE_LIBRARY NAMES freeimage libFreeImage.a
                                PATHS $ENV{H3D_EXTERNAL_ROOT}/lib
                                      $ENV{H3D_ROOT}/../External/lib
                                      ../../External/lib
-                                     ${module_file_path}/../../../External/lib )
+                                     ${OE_LIB_DIR}/FreeImage/lib
+									 ${module_file_path}/../../../External/lib )
 MARK_AS_ADVANCED(FREEIMAGE_LIBRARY)
 
-IF( WIN32 AND PREFER_STATIC_LIBRARIES )
-  SET( FREEIMAGE_STATIC_LIBRARY_NAME FreeImage_static )
-  
-  IF( MSVC80 )
-    SET( FREEIMAGE_STATIC_LIBRARY_NAME FreeImage_static_vc8 )
-  ELSEIF( MSVC90 )
-    SET( FREEIMAGE_STATIC_LIBRARY_NAME FreeImage_static_vc9 )
-  ENDIF( MSVC80 )
-  
-  FIND_LIBRARY( FREEIMAGE_STATIC_LIBRARY NAMES ${FREEIMAGE_STATIC_LIBRARY_NAME}
-                                         PATHS $ENV{H3D_EXTERNAL_ROOT}/lib
-                                         $ENV{H3D_ROOT}/../External/lib
-                                         ../../External/lib
-                                         ${module_file_path}/../../../External/lib )
-  MARK_AS_ADVANCED(FREEIMAGE_STATIC_LIBRARY)
-  
-  IF( FREEIMAGE_STATIC_LIBRARY )
-    SET( FREEIMAGE_STATIC_LIBRARIES_FOUND 1 )
-  ENDIF( FREEIMAGE_STATIC_LIBRARY )
-  
-  FIND_LIBRARY( FREEIMAGE_STATIC_DEBUG_LIBRARY NAMES ${FREEIMAGE_STATIC_LIBRARY_NAME}_d
-                                               PATHS $ENV{H3D_EXTERNAL_ROOT}/lib
-                                               $ENV{H3D_ROOT}/../External/lib
-                                               ../../External/lib
-                                               ${module_file_path}/../../../External/lib )
-  MARK_AS_ADVANCED(FREEIMAGE_STATIC_DEBUG_LIBRARY)
-    
-  IF( FREEIMAGE_STATIC_DEBUG_LIBRARY )
-    SET( FREEIMAGE_STATIC_LIBRARIES_FOUND 1 )
-  ENDIF( FREEIMAGE_STATIC_DEBUG_LIBRARY )
-ENDIF( WIN32 AND PREFER_STATIC_LIBRARIES )
+#IF( WIN32 AND PREFER_STATIC_LIBRARIES )
+#  SET( FREEIMAGE_STATIC_LIBRARY_NAME FreeImage_static )
+#  
+#  IF( MSVC80 )
+#    SET( FREEIMAGE_STATIC_LIBRARY_NAME FreeImage_static_vc8 )
+#  ELSEIF( MSVC90 )
+#    SET( FREEIMAGE_STATIC_LIBRARY_NAME FreeImage_static_vc9 )
+#  ENDIF( MSVC80 )
+#  
+#  FIND_LIBRARY( FREEIMAGE_STATIC_LIBRARY NAMES ${FREEIMAGE_STATIC_LIBRARY_NAME}
+#                                         PATHS $ENV{H3D_EXTERNAL_ROOT}/lib
+#                                         $ENV{H3D_ROOT}/../External/lib
+#                                         ../../External/lib
+#                                         ${module_file_path}/../../../External/lib )
+#  MARK_AS_ADVANCED(FREEIMAGE_STATIC_LIBRARY)
+#  
+#  IF( FREEIMAGE_STATIC_LIBRARY )
+#    SET( FREEIMAGE_STATIC_LIBRARIES_FOUND 1 )
+#  ENDIF( FREEIMAGE_STATIC_LIBRARY )
+#  
+#  FIND_LIBRARY( FREEIMAGE_STATIC_DEBUG_LIBRARY NAMES ${FREEIMAGE_STATIC_LIBRARY_NAME}_d
+#                                               PATHS $ENV{H3D_EXTERNAL_ROOT}/lib
+#                                               $ENV{H3D_ROOT}/../External/lib
+#                                               ../../External/lib
+#                                               ${module_file_path}/../../../External/lib )
+#  MARK_AS_ADVANCED(FREEIMAGE_STATIC_DEBUG_LIBRARY)
+#    
+#  IF( FREEIMAGE_STATIC_DEBUG_LIBRARY )
+#    SET( FREEIMAGE_STATIC_LIBRARIES_FOUND 1 )
+#  ENDIF( FREEIMAGE_STATIC_DEBUG_LIBRARY )
+#ENDIF( WIN32 AND PREFER_STATIC_LIBRARIES )
 
 IF( FREEIMAGE_LIBRARY OR FREEIMAGE_STATIC_LIBRARIES_FOUND )
   SET( FREEIMAGE_LIBRARIES_FOUND 1 )
@@ -68,25 +70,25 @@ ENDIF( FREEIMAGE_LIBRARY OR FREEIMAGE_STATIC_LIBRARIES_FOUND )
 IF(FREEIMAGE_INCLUDE_DIR AND FREEIMAGE_LIBRARIES_FOUND)
   SET(FREEIMAGE_FOUND 1)
 
-  IF( WIN32 AND PREFER_STATIC_LIBRARIES AND FREEIMAGE_STATIC_LIBRARIES_FOUND )
-    IF(FREEIMAGE_STATIC_LIBRARY)
-      SET(FREEIMAGE_LIBRARIES optimized ${FREEIMAGE_STATIC_LIBRARY} )
-    ELSE(FREEIMAGE_STATIC_LIBRARY)
-      SET(FREEIMAGE_LIBRARIES optimized ${FREEIMAGE_STATIC_LIBRARY_NAME} )
-      MESSAGE( STATUS, "FreeImage static release libraries not found. Release build might not work." )
-    ENDIF(FREEIMAGE_STATIC_LIBRARY)
+  #  IF( WIN32 AND PREFER_STATIC_LIBRARIES AND FREEIMAGE_STATIC_LIBRARIES_FOUND )
+  #  IF(FREEIMAGE_STATIC_LIBRARY)
+  #    SET(FREEIMAGE_LIBRARIES optimized ${FREEIMAGE_STATIC_LIBRARY} )
+  #  ELSE(FREEIMAGE_STATIC_LIBRARY)
+  #    SET(FREEIMAGE_LIBRARIES optimized ${FREEIMAGE_STATIC_LIBRARY_NAME} )
+  #    MESSAGE( STATUS, "FreeImage static release libraries not found. Release build might not work." )
+  #  ENDIF(FREEIMAGE_STATIC_LIBRARY)
 
-    IF(FREEIMAGE_STATIC_DEBUG_LIBRARY)
-      SET(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBRARIES} debug ${FREEIMAGE_STATIC_DEBUG_LIBRARY} )
-    ELSE(FREEIMAGE_STATIC_DEBUG_LIBRARY)
-      SET(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBRARIES} debug ${FREEIMAGE_STATIC_LIBRARY_NAME}_d )
-      MESSAGE( STATUS, "FreeImage static debug libraries not found. Debug build might not work." )
-    ENDIF(FREEIMAGE_STATIC_DEBUG_LIBRARY)
+  #  IF(FREEIMAGE_STATIC_DEBUG_LIBRARY)
+  #    SET(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBRARIES} debug ${FREEIMAGE_STATIC_DEBUG_LIBRARY} )
+  #  ELSE(FREEIMAGE_STATIC_DEBUG_LIBRARY)
+  #    SET(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBRARIES} debug ${FREEIMAGE_STATIC_LIBRARY_NAME}_d )
+  #    MESSAGE( STATUS, "FreeImage static debug libraries not found. Debug build might not work." )
+  #  ENDIF(FREEIMAGE_STATIC_DEBUG_LIBRARY)
 
-    SET( FREEIMAGE_LIB 1 )
-  ELSE( WIN32 AND PREFER_STATIC_LIBRARIES AND FREEIMAGE_STATIC_LIBRARIES_FOUND )
+  #  SET( FREEIMAGE_LIB 1 )
+  #ELSE( WIN32 AND PREFER_STATIC_LIBRARIES AND FREEIMAGE_STATIC_LIBRARIES_FOUND )
     SET(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBRARY})
-  ENDIF( WIN32 AND PREFER_STATIC_LIBRARIES AND FREEIMAGE_STATIC_LIBRARIES_FOUND )
+  #ENDIF( WIN32 AND PREFER_STATIC_LIBRARIES AND FREEIMAGE_STATIC_LIBRARIES_FOUND )
 
   SET(FREEIMAGE_INCLUDE_DIR ${FREEIMAGE_INCLUDE_DIR})
 ELSE(FREEIMAGE_INCLUDE_DIR AND FREEIMAGE_LIBRARIES_FOUND)
