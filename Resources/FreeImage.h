@@ -31,6 +31,177 @@ namespace Resources {
 
 using namespace std;
 
+
+// without the template argument (why should the user specify the type
+// of the resource, which can in general not be decided until the
+// resource is loaded???!! - a paradox?)
+class FImage: public ITexture2D {
+private:
+    bool loaded;
+    string filename;            //!< file name
+public:
+    FImage() : loaded(false) {} 
+
+    /**
+     * Constructor
+     *
+     * @param file name of file to load.
+     */
+    FImage(string file)
+        : ITexture2D(), loaded(false), filename(file) {}
+
+    virtual ~FImage() {}
+
+    // resource methods
+    virtual void Load() {
+        if (loaded) return;
+
+        FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename.c_str(), 0);
+        FIBITMAP* img = FreeImage_Load(format, filename.c_str());
+        if (!img) throw ResourceException("Error loading file: " + filename + ".");
+        
+        // color types:
+        // 'uint8   : one channel 8 bit int
+        // 'uint16  : one channel 16 bit int
+        // 'float32 : one channel 32 bit float
+        // 'rgb     : 24 bit rgb color
+        // 'rgba    : 32 bit rgba color
+        // 'rgb32f  : 3 x 32 bit float color  
+        // 'rgba32f : 4 x 32 bit float color  
+
+    
+        this->width  = FreeImage_GetWidth(img);
+        this->height = FreeImage_GetHeight(img);
+        unsigned int pixels = width * height;
+        BYTE *bits = FreeImage_GetBits(img);
+        unsigned int bpp = FreeImage_GetBPP(img);
+        FREE_IMAGE_TYPE image_type = FreeImage_GetImageType(img);
+        bool loaded = true;
+
+        unsigned int i;
+        switch(image_type) {
+        case FIT_BITMAP: 
+            {
+                switch(bpp) {
+                case 8:
+                    { 
+                        this->channels = 1;
+                        this->format = LUMINANCE; 
+                        this->type = Types::UBYTE;
+                        char* data = new char[pixels];
+                        this->data = data;
+                        memcpy(data, bits, sizeof(char) * pixels); 
+                        break;
+                    }
+                case 24: 
+                    {
+                        this->channels = 3;
+                        this->format = RGB; 
+                        this->type = Types::UBYTE;
+                        char* data = new char[pixels*3];
+                        this->data = data;
+                        RGBTRIPLE* pix = (RGBTRIPLE*) bits;
+                        for (i = 0; i < pixels; ++i) {
+                            data[i*3]   = pix[i].rgbtRed;
+                            data[i*3+1] = pix[i].rgbtGreen;
+                            data[i*3+2] = pix[i].rgbtBlue;
+                        }
+                        // set_bitmap_scm(width, height, "rgb", data);
+                        break;
+                    }
+                case 32:
+                    {
+                        this->channels = 4;
+                        this->format = RGBA; 
+                        this->type = Types::UBYTE;
+                        char* data = new char[pixels*4];
+                        this->data = data;
+                        RGBQUAD* pix = (RGBQUAD*) bits;
+                        for (i = 0; i < pixels; ++i) {
+                            data[i*4]   = pix[i].rgbRed;
+                            data[i*4+1] = pix[i].rgbGreen;
+                            data[i*4+2] = pix[i].rgbBlue;
+                            data[i*4+3] = pix[i].rgbReserved;
+                        }
+                        // set_bitmap_scm(width, height, "rgba", data);
+                        break;
+                    }
+                default:
+                    loaded = false;
+                }
+                break;   
+            }
+        case FIT_UINT16:
+            {
+                this->channels = 1;
+                this->format = LUMINANCE; 
+                this->type = Types::USHORT;
+                unsigned short* data = new (unsigned short)(pixels);
+                this->data = data;
+                memcpy(data, bits, sizeof(unsigned short) * pixels); 
+                // set_bitmap_scm(width, height, "uint16", (char*)data); 
+                break;
+            }
+        case FIT_FLOAT:
+            {
+                this->channels = 1;
+                this->format = LUMINANCE; 
+                this->type = Types::FLOAT;
+                float* data = new float[pixels];
+                this->data = data;
+                memcpy(data, bits, sizeof(float) * pixels); 
+                // set_bitmap_scm(width, height, "float32", (char*)data); 
+                break;
+            }
+        default:
+            loaded = false;
+        }
+
+        FreeImage_Unload(img);
+
+    }
+
+    virtual void Unload() {
+        switch (this->type) {
+        case Types::UBYTE:
+            delete[] (char*)this->data;
+            break;
+        case Types::USHORT:
+            delete[] (unsigned short*)this->data;
+            break; 
+        case Types::FLOAT:
+            delete[] (float*)this->data;
+            break;
+        default:
+            logger.warning << "Freeimage texture: Cannot unload unsupported texture type." << logger.end;
+            break;
+        }
+        this->loaded = false;
+    }
+
+    virtual ITexture2D* Clone() {
+        throw ResourceException("Clone() not implemented.");
+    }
+
+    virtual unsigned int GetChannelSize() {
+        throw ResourceException("GetChannelSize() not implemented since it is redundant (see colorformat and type!).");
+    }
+    
+    virtual void Reverse() {
+        throw ResourceException("Reverse() not implemented since it is a silly operation to have on a texture resource.");
+    }
+
+    virtual void ReverseVertecally() {
+        throw ResourceException("ReverseVertically() not implemented since it is a silly operation to have on a texture resource.");
+    }
+    
+    virtual void ReverseHorizontally() {
+        throw ResourceException("ReverseHorizontally() not implemented since it is a silly operation to have on a texture resource.");
+    }
+};
+
+
+
 /**
  * FreeImage resource.
  *

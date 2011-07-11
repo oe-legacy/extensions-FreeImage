@@ -38,7 +38,8 @@ FreeImagePlugin::FreeImagePlugin() {
 }
 
 ITextureResourcePtr FreeImagePlugin::CreateResource(string file) {
-    return ITextureResourcePtr(new FreeImage<unsigned char>(file));
+    // return ITextureResourcePtr(new FreeImage<unsigned char>(file));
+    return ITextureResourcePtr(new FImage(file));
 }
 
 UCharFreeImagePlugin::UCharFreeImagePlugin() {
