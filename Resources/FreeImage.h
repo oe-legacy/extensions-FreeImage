@@ -106,7 +106,6 @@ public:
                             data[i*3+1] = pix[i].rgbtGreen;
                             data[i*3+2] = pix[i].rgbtBlue;
                         }
-                        // set_bitmap_scm(width, height, "rgb", data);
                         break;
                     }
                 case 32:
@@ -123,7 +122,6 @@ public:
                             data[i*4+2] = pix[i].rgbBlue;
                             data[i*4+3] = pix[i].rgbReserved;
                         }
-                        // set_bitmap_scm(width, height, "rgba", data);
                         break;
                     }
                 default:
@@ -139,7 +137,6 @@ public:
                 unsigned short* data = new (unsigned short)(pixels);
                 this->data = data;
                 memcpy(data, bits, sizeof(unsigned short) * pixels); 
-                // set_bitmap_scm(width, height, "uint16", (char*)data); 
                 break;
             }
         case FIT_FLOAT:
@@ -150,7 +147,6 @@ public:
                 float* data = new float[pixels];
                 this->data = data;
                 memcpy(data, bits, sizeof(float) * pixels); 
-                // set_bitmap_scm(width, height, "float32", (char*)data); 
                 break;
             }
         default:
@@ -173,9 +169,10 @@ public:
             delete[] (float*)this->data;
             break;
         default:
-            logger.warning << "Freeimage texture: Cannot unload unsupported texture type." << logger.end;
+            throw Exception("Freeimage texture: Cannot unload unsupported texture type.");
             break;
         }
+        this->data = NULL;
         this->loaded = false;
     }
 
