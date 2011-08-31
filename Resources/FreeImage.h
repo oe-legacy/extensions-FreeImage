@@ -93,6 +93,13 @@ public:
                         memcpy(data, bits, sizeof(char) * pixels); 
                         break;
                     }
+                case 16:
+                    {
+                        FIBITMAP* tmp = FreeImage_ConvertTo24Bits(img);
+                        FreeImage_Unload(img);
+                        img = tmp;
+                        bits = FreeImage_GetBits(img);
+                    }
                 case 24: 
                     {
                         this->channels = 3;
