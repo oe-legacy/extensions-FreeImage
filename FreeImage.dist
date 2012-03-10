@@ -1,6 +1,6 @@
 # source
-darcs /extensions/FreeImage                    http://openengine.dk/code/extensions/FreeImage
-darcs-dev /extensions/FreeImage                    fh.daimi.au.dk:/users/cgd/code/extensions/FreeImage
+git /extensions/FreeImage                    git://github.com/oe-legacy/extensions-FreeImage.git
+git-dev /extensions/FreeImage                git@github.com:oe-legacy/extensions-FreeImage.git
 
 # windows lib
 win32 /libraries http://openengine.dk/data/libraries/FreeImage-win32.zip
